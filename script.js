@@ -17,11 +17,19 @@ let teclaCima = 38;
 let teclaBaixo = 40;
 
 //Variaveis da raquete do Jogador
-let yJogador = 150;
-let taxaMovimento = 15;
+let xRaqueteJogador = 10;
+let yRaqueteJogador = 150;
 
 //Variaveis da raquete do Adversario
-let yAdversario = 150;
+let xRaqueteAdversario = 575;
+let yRaqueteAdversario = 150;
+
+//Comprimento e Altura das Raquetes
+let raqueteComprimento = 12;
+let raqueteAltura = 80;
+
+//Taxa de movimento das raquetes
+let taxaMovimento = 15;
 
 //Variaveis para medir a tela
 let maxWidth = 600;
@@ -54,7 +62,7 @@ function movimentaBolinha() {
 }
 
 //Função que verifica se a bolinha está encostando nas bordas e muda seu direcionamento
-function verificaColisaoBorda (){
+function verificaColisaoBorda() {
   if (xBolinha + raio > maxWidth || xBolinha - raio < 0) {
     velocidadeXBolinha *= -1;
   }
@@ -67,16 +75,16 @@ function verificaColisaoBorda (){
 //Função que desenha a raquete do Jogador e recebe a posição Y
 function desenhaJogador(y) {
   pincel.fillStyle = "white";
-  pincel.fillRect(10, y, 12, 80);
+  pincel.fillRect(xRaqueteJogador, y, raqueteComprimento, raqueteAltura);
 }
 
 //Função que movimenta a raquete do Jodaor se apertar as teclas "seta para cima" ou "seta para baixo"
 function movimentaJogador(event) {
-  if (event.keyCode == teclaCima && yJogador > 0) {
-    yJogador = yJogador - taxaMovimento;
-  } else if (yJogador < 320) {
+  if (event.keyCode == teclaCima && yRaqueteJogador > 0) {
+    yRaqueteJogador = yRaqueteJogador - taxaMovimento;
+  } else if (yRaqueteJogador < 320) {
     if (event.keyCode == teclaBaixo) {
-      yJogador = yJogador + taxaMovimento;
+      yRaqueteJogador = yRaqueteJogador + taxaMovimento;
     }
   }
 }
@@ -84,15 +92,41 @@ function movimentaJogador(event) {
 //Função que desenha o adversário e recebe uma posição Y
 function desenhaAdversario(y) {
   pincel.fillStyle = "white";
-  pincel.fillRect(575, y, 12, 80);
+  pincel.fillRect(xRaqueteAdversario, y, raqueteComprimento, raqueteAltura);
 }
 
 //Função que movimenta o adversário em Y sempre seguindo a posição da bolinha
 function movimentaAdversario() {
-  if (yAdversario < tela.offsetHeight) {
-    yAdversario = yBolinha - 60;
+  if (yRaqueteAdversario < tela.offsetHeight) {
+    yRaqueteAdversario = yBolinha - 60;
   }
-  desenhaAdversario(yAdversario);
+  desenhaAdversario(yRaqueteAdversario);
+}
+
+function verificaColisaoRaqueteJogador() {
+  if (
+    xBolinha - raio < xRaqueteJogador + raqueteComprimento &&
+    yBolinha - raio < yRaqueteJogador + raqueteAltura &&
+    yBolinha + raio > yRaqueteJogador
+  ) {
+    velocidadeXBolinha *= -1;
+  }
+}
+
+function verificaColisaoRaqueteAdversario() {
+  if (
+    xBolinha - raio > xRaqueteAdversario - raqueteComprimento &&
+    yBolinha - raio < yRaqueteAdversario + raqueteAltura &&
+    yBolinha + raio > yRaqueteAdversario
+  ) {
+    velocidadeXBolinha *= -1;
+  }
+}
+
+function verificaColisoes(){
+  verificaColisaoBorda();
+  verificaColisaoRaqueteJogador();
+  verificaColisaoRaqueteAdversario();
 }
 
 //Função que atualiza os frames e chama todas as outras funções
@@ -100,9 +134,10 @@ function atualizaTela() {
   limpaTela();
   desenhaFundo();
   movimentaBolinha();
-  verificaColisaoBorda();
-  desenhaJogador(yJogador);
+  desenhaJogador(yRaqueteJogador);
   movimentaAdversario();
+  verificaColisoes();
+  
 }
 
 //Atualiza tela a cada 3 segundos
@@ -110,4 +145,3 @@ setInterval(atualizaTela, 3);
 
 //Recebe o movimento do jogador quando a tecla está apertada
 document.onkeydown = movimentaJogador;
-
