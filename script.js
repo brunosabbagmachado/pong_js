@@ -2,13 +2,15 @@
 let tela = document.querySelector("canvas");
 let pincel = tela.getContext("2d");
 
+//Variaveis para medir a tela
+let maxWidth = 600;
+let maxHeight = 400;
+
 //Variaveis da Bolinha
 let xBolinha = 300;
 let yBolinha = 200;
 let diametro = 12;
 let raio = diametro / 2;
-
-//Variaveis da velocidade
 let velocidadeXBolinha = 1;
 let velocidadeYBolinha = 1;
 
@@ -23,6 +25,7 @@ let yRaqueteJogador = 150;
 //Variaveis da raquete do Adversario
 let xRaqueteAdversario = 575;
 let yRaqueteAdversario = 150;
+let velocidadeYAdversario;
 
 //Comprimento e Altura das Raquetes
 let raqueteComprimento = 12;
@@ -31,9 +34,9 @@ let raqueteAltura = 80;
 //Taxa de movimento das raquetes
 let taxaMovimento = 15;
 
-//Variaveis para medir a tela
-let maxWidth = 600;
-let maxHeight = 400;
+//Placar do jogo
+let pontosJogador = 0;
+let pontosOponente = 0;
 
 //Função que limpa a tela
 function limpaTela() {
@@ -62,20 +65,46 @@ function movimentaBolinha() {
 }
 
 //Função que verifica se a bolinha está encostando nas bordas e muda seu direcionamento
-function verificaColisaoBorda() {
-  if (xBolinha + raio > maxWidth || xBolinha - raio < 0) {
+function verificaColisoes() {
+  //colisão da Bola com as bordas laterais da tela
+  if (xBolinha + raio > maxWidth) {
+    velocidadeXBolinha *= -1;
+    pontosJogador += 1;
+  }
+
+  if (xBolinha - raio < 0) {
+    velocidadeXBolinha *= -1;
+    pontosOponente += 1;
+  }
+
+  //colisão da Bola com as bordas inferior e superior da tela
+  if (yBolinha + raio > maxHeight || yBolinha - raio < 0) {
+    velocidadeYBolinha *= -1;
+  }
+
+  //colisão da Bola com a raquete do Jogador
+  if (
+    xBolinha - raio < xRaqueteJogador + raqueteComprimento &&
+    yBolinha - raio < yRaqueteJogador + raqueteAltura &&
+    yBolinha + raio > yRaqueteJogador
+  ) {
     velocidadeXBolinha *= -1;
   }
 
-  if (yBolinha + raio > maxHeight || yBolinha - raio < 0) {
-    velocidadeYBolinha *= -1;
+  //colisao da Bola com a raquete do Adversario
+  if (
+    xBolinha - raio > xRaqueteAdversario - raqueteComprimento &&
+    yBolinha - raio < yRaqueteAdversario + raqueteAltura &&
+    yBolinha + raio > yRaqueteAdversario
+  ) {
+    velocidadeXBolinha *= -1;
   }
 }
 
 //Função que desenha a raquete do Jogador e recebe a posição Y
-function desenhaJogador(y) {
+function desenhaRaquete(x, y) {
   pincel.fillStyle = "white";
-  pincel.fillRect(xRaqueteJogador, y, raqueteComprimento, raqueteAltura);
+  pincel.fillRect(x, y, raqueteComprimento, raqueteAltura);
 }
 
 //Função que movimenta a raquete do Jodaor se apertar as teclas "seta para cima" ou "seta para baixo"
@@ -89,44 +118,21 @@ function movimentaJogador(event) {
   }
 }
 
-//Função que desenha o adversário e recebe uma posição Y
-function desenhaAdversario(y) {
-  pincel.fillStyle = "white";
-  pincel.fillRect(xRaqueteAdversario, y, raqueteComprimento, raqueteAltura);
-}
-
 //Função que movimenta o adversário em Y sempre seguindo a posição da bolinha
 function movimentaAdversario() {
-  if (yRaqueteAdversario < tela.offsetHeight) {
-    yRaqueteAdversario = yBolinha - 60;
-  }
-  desenhaAdversario(yRaqueteAdversario);
+  velocidadeYAdversario =
+    yBolinha - yRaqueteAdversario - raqueteComprimento / 2 - 30;
+  yRaqueteAdversario += velocidadeYAdversario;
 }
 
-function verificaColisaoRaqueteJogador() {
-  if (
-    xBolinha - raio < xRaqueteJogador + raqueteComprimento &&
-    yBolinha - raio < yRaqueteJogador + raqueteAltura &&
-    yBolinha + raio > yRaqueteJogador
-  ) {
-    velocidadeXBolinha *= -1;
-  }
-}
+function incluiPlacar() {
+  pincel.font = "25px serif";
+  pincel.textAlign = "center";
+  pincel.fillText("Placar", 300, 30);
 
-function verificaColisaoRaqueteAdversario() {
-  if (
-    xBolinha - raio > xRaqueteAdversario - raqueteComprimento &&
-    yBolinha - raio < yRaqueteAdversario + raqueteAltura &&
-    yBolinha + raio > yRaqueteAdversario
-  ) {
-    velocidadeXBolinha *= -1;
-  }
-}
-
-function verificaColisoes(){
-  verificaColisaoBorda();
-  verificaColisaoRaqueteJogador();
-  verificaColisaoRaqueteAdversario();
+  pincel.font = "20px serif";
+  pincel.textAlign = "center";
+  pincel.fillText(pontosJogador + "  X  " + pontosOponente, 300, 60);
 }
 
 //Função que atualiza os frames e chama todas as outras funções
@@ -134,14 +140,15 @@ function atualizaTela() {
   limpaTela();
   desenhaFundo();
   movimentaBolinha();
-  desenhaJogador(yRaqueteJogador);
+  desenhaRaquete(xRaqueteJogador, yRaqueteJogador);
+  desenhaRaquete(xRaqueteAdversario, yRaqueteAdversario);
   movimentaAdversario();
   verificaColisoes();
-  
+  incluiPlacar();
 }
 
 //Atualiza tela a cada 3 segundos
-setInterval(atualizaTela, 3);
+setInterval(atualizaTela, 1);
 
 //Recebe o movimento do jogador quando a tecla está apertada
 document.onkeydown = movimentaJogador;
