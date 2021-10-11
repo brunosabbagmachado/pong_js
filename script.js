@@ -26,6 +26,7 @@ let yRaqueteJogador = 150;
 let xRaqueteAdversario = 575;
 let yRaqueteAdversario = 150;
 let velocidadeYAdversario;
+let chanceDeErrar = 0;
 
 //Comprimento e Altura das Raquetes
 let raqueteComprimento = 12;
@@ -37,6 +38,17 @@ let taxaMovimento = 15;
 //Placar do jogo
 let pontosJogador = 0;
 let pontosOponente = 0;
+
+//Sons do jogo
+let raquetada;
+let ponto;
+let trilha;
+
+function preLoad() {
+  trilha = new Audio("trilha.mp3");
+  raquetada = new Audio("raquetada.mp3");
+  ponto = new Audio("ponto.mp3");
+}
 
 //Função que limpa a tela
 function limpaTela() {
@@ -118,21 +130,33 @@ function movimentaJogador(event) {
   }
 }
 
+function calculaChanceDeErrar() {
+  if (pontosOponente >= pontosJogador) {
+    chanceDeErrar += 1;
+    if (chanceDeErrar >= 39) {
+      chanceDeErrar = 40;
+    }
+  } else {
+    chanceDeErrar -= 1;
+    if (chanceDeErrar <= 35) {
+      chanceDeErrar = 35;
+    }
+  }
+}
+
 //Função que movimenta o adversário em Y sempre seguindo a posição da bolinha
 function movimentaAdversario() {
-  velocidadeYAdversario =
-    yBolinha - yRaqueteAdversario - raqueteComprimento / 2 - 30;
-  yRaqueteAdversario += velocidadeYAdversario;
+  velocidadeYAdversario = yBolinha - yRaqueteAdversario - raqueteComprimento / 2 - 30;
+  yRaqueteAdversario += velocidadeYAdversario + chanceDeErrar;
+  calculaChanceDeErrar();
 }
 
 function incluiPlacar() {
-  pincel.font = "25px serif";
+  pincel.font = "30px serif";
   pincel.textAlign = "center";
-  pincel.fillText("Placar", 300, 30);
 
-  pincel.font = "20px serif";
-  pincel.textAlign = "center";
-  pincel.fillText(pontosJogador + "  X  " + pontosOponente, 300, 60);
+  pincel.fillStyle = "orange";
+  pincel.fillText(pontosJogador + "    X    " + pontosOponente, 300, 40);
 }
 
 //Função que atualiza os frames e chama todas as outras funções
